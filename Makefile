@@ -16,11 +16,17 @@ README.md: index.js
 	  -- $^ \
 	| sed 's/<h4 name="\(.*\)#\(.*\)">\(.*\)\1#\2/<h4 name="\1.prototype.\2">\3\1#\2/' >'$@'
 
+repl/ramda.json: package.json
+	curl --silent 'https://raine.github.io/ramda-json-docs/v$(shell node -p 'require("./$<").dependencies.ramda' | tr . _).json' >'$@'
+
 
 .PHONY: lint
-lint:
-	$(JSHINT) -- index.js test/index.js
-	$(JSCS) -- index.js test/index.js
+lint: repl/.jshintrc
+	$(JSHINT) -- index.js repl/repl test/index.js
+	$(JSCS) -- index.js repl/repl test/index.js
+
+repl/.jshintrc: .jshintrc node_modules/ramda/package.json
+	node -e 'var R = require("ramda"); var jshintrc = JSON.parse(require("fs").readFileSync("./$<")); jshintrc.predef = R.keys(R).concat(["R", "S"]).sort(); console.log(JSON.stringify(jshintrc))' >'$@'
 
 
 .PHONY: release-major release-minor release-patch
