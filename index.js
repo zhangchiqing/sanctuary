@@ -417,7 +417,7 @@
   //. > S.is(String, 42)
   //. false
   //. ```
-  var is = S.is =
+  S.is =
   def('is',
       {},
       [TypeRep, $.Any, $.Boolean],
@@ -2571,25 +2571,24 @@
         return Nothing();
       });
 
-  //# pluck :: Accessible a => TypeRep b -> String -> Array a -> Array (Maybe b)
+  //# pluck :: Accessible a => (b -> Boolean) -> String -> [a] -> [Maybe c]
   //.
-  //. Takes a [type representative](#type-representatives), a property name,
-  //. and an array of objects and returns an array of equal length. Each
-  //. element of the output array is Just the value of the specified property
-  //. of the corresponding object if the value is of the specified type
-  //. (according to [`is`](#is)); Nothing otherwise.
+  //. Takes a predicate, a property name, and a list of objects and returns a
+  //. list of equal length. Each element of the output list is Just the value
+  //. of the specified property of the corresponding object if the value passes
+  //. the given predicate; Nothing otherwise.
   //.
   //. See also [`get`](#get).
   //.
   //. ```javascript
-  //. > S.pluck(Number, 'x', [{x: 1}, {x: 2}, {x: '3'}, {x: null}, {}])
+  //. > S.pluck(S.is(Number), 'x', [{x: 1}, {x: 2}, {x: '3'}, {x: null}, {}])
   //. [Just(1), Just(2), Nothing(), Nothing(), Nothing()]
   //. ```
   S.pluck =
   def('pluck',
       {a: [Accessible]},
-      [TypeRep, $.String, $.Array(a), $.Array($Maybe(b))],
-      function(type, key, xs) { return R.map(get(type, key), xs); });
+      [$.Function, $.String, $.Array(a), $.Array($Maybe(c))],
+      function(pred, key, xs) { return R.map(get(pred, key), xs); });
 
   //# reduce :: Foldable f => (a -> b -> a) -> a -> f b -> a
   //.
@@ -2686,58 +2685,54 @@
   //. ```
   S.prop = prop;
 
-  //# get :: Accessible a => TypeRep b -> String -> a -> Maybe b
+  //# get :: Accessible a => (b -> Boolean) -> String -> a -> Maybe c
   //.
-  //. Takes a [type representative](#type-representatives), a property
-  //. name, and an object and returns Just the value of the specified object
-  //. property if it is of the specified type (according to [`is`](#is));
+  //. Takes a predicate, a property name, and an object and returns Just the
+  //. value of the specified object property if passes the given predicate;
   //. Nothing otherwise.
-  //.
-  //. The `Object` type representative may be used as a catch-all since most
-  //. values have `Object.prototype` in their prototype chains.
   //.
   //. See also [`gets`](#gets) and [`prop`](#prop).
   //.
   //. ```javascript
-  //. > S.get(Number, 'x', {x: 1, y: 2})
+  //. > S.get(S.is(Number), 'x', {x: 1, y: 2})
   //. Just(1)
   //.
-  //. > S.get(Number, 'x', {x: '1', y: '2'})
+  //. > S.get(S.is(Number), 'x', {x: '1', y: '2'})
   //. Nothing()
   //.
-  //. > S.get(Number, 'x', {})
+  //. > S.get(S.is(Number), 'x', {})
   //. Nothing()
   //. ```
   var get = S.get =
   def('get',
       {a: [Accessible]},
-      [TypeRep, $.String, a, $Maybe(b)],
-      function(type, key, obj) { return filter(is(type), Just(obj[key])); });
+      [$.Function, $.String, a, $Maybe(c)],
+      function(pred, key, obj) { return filter(pred, Just(obj[key])); });
 
-  //# gets :: Accessible a => TypeRep b -> Array String -> a -> Maybe b
+  //# gets :: Accessible a => (b -> Boolean) -> [String] -> a -> Maybe c
   //.
-  //. Takes a [type representative](#type-representatives), an array of
-  //. property names, and an object and returns Just the value at the path
-  //. specified by the array of property names if such a path exists and
-  //. the value is of the specified type; Nothing otherwise.
+  //. Takes a predicate, a list of property names, and an object and returns
+  //. Just the value at the path specified by the list of property names if
+  //. such a path exists and the value passes the given predicate; Nothing
+  //. otherwise.
   //.
   //. See also [`get`](#get).
   //.
   //. ```javascript
-  //. > S.gets(Number, ['a', 'b', 'c'], {a: {b: {c: 42}}})
+  //. > S.gets(S.is(Number), ['a', 'b', 'c'], {a: {b: {c: 42}}})
   //. Just(42)
   //.
-  //. > S.gets(Number, ['a', 'b', 'c'], {a: {b: {c: '42'}}})
+  //. > S.gets(S.is(Number), ['a', 'b', 'c'], {a: {b: {c: '42'}}})
   //. Nothing()
   //.
-  //. > S.gets(Number, ['a', 'b', 'c'], {})
+  //. > S.gets(S.is(Number), ['a', 'b', 'c'], {})
   //. Nothing()
   //. ```
   S.gets =
   def('gets',
       {a: [Accessible]},
-      [TypeRep, $.Array($.String), a, $Maybe(b)],
-      function(type, keys, obj) {
+      [$.Function, $.Array($.String), a, $Maybe(c)],
+      function(pred, keys, obj) {
         var x = obj;
         for (var idx = 0; idx < keys.length; idx += 1) {
           if (x == null) {
@@ -2745,7 +2740,7 @@
           }
           x = x[keys[idx]];
         }
-        return filter(is(type), Just(x));
+        return filter(pred, Just(x));
       });
 
   //# keys :: StrMap a -> Array String
@@ -3152,28 +3147,27 @@
         )(s);
       });
 
-  //# parseJson :: TypeRep a -> String -> Maybe a
+  //# parseJson :: (a -> Boolean) -> String -> Maybe b
   //.
-  //. Takes a [type representative](#type-representatives) and a string which
-  //. may or may not be valid JSON, and returns Just the result of applying
-  //. `JSON.parse` to the string *if* the result is of the specified type
-  //. (according to [`is`](#is)); Nothing otherwise.
+  //. Takes a predicate and a string which may or may not be valid JSON, and
+  //. returns Just the result of applying `JSON.parse` to the string *if* the
+  //. result passes the predicate; Nothing otherwise.
   //.
   //. ```javascript
-  //. > S.parseJson(Array, '["foo","bar","baz"]')
+  //. > S.parseJson(S.is(Array), '["foo","bar","baz"]')
   //. Just(['foo', 'bar', 'baz'])
   //.
-  //. > S.parseJson(Array, '[')
+  //. > S.parseJson(S.is(Array), '[')
   //. Nothing()
   //.
-  //. > S.parseJson(Object, '["foo","bar","baz"]')
+  //. > S.parseJson(S.is(Object), '["foo","bar","baz"]')
   //. Nothing()
   //. ```
   S.parseJson =
   def('parseJson',
       {},
-      [TypeRep, $.String, $Maybe(a)],
-      function(type, s) { return filter(is(type), encase(JSON.parse, s)); });
+      [$.Function, $.String, $Maybe(b)],
+      function(pred, s) { return filter(pred, encase(JSON.parse, s)); });
 
   //. ### RegExp
 

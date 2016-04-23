@@ -5,6 +5,8 @@ var throws = require('assert').throws;
 var eq = require('./utils').eq;
 var errorEq = require('./utils').errorEq;
 var S = require('..');
+var T = function() { return true; };
+var F = function() { return false; };
 
 
 describe('parseJson', function() {
@@ -19,21 +21,21 @@ describe('parseJson', function() {
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
-                   'parseJson :: TypeRep -> String -> Maybe a\n' +
-                   '             ^^^^^^^\n' +
+                   'parseJson :: Function -> String -> Maybe b\n' +
+                   '             ^^^^^^^^\n' +
                    '                1\n' +
                    '\n' +
                    '1)  "String" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘TypeRep’.\n'));
+                   'The value at position 1 is not a member of ‘Function’.\n'));
 
-    throws(function() { S.parseJson(Array, [1, 2, 3]); },
+    throws(function() { S.parseJson(T, [1, 2, 3]); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
-                   'parseJson :: TypeRep -> String -> Maybe a\n' +
-                   '                        ^^^^^^\n' +
-                   '                          1\n' +
+                   'parseJson :: Function -> String -> Maybe b\n' +
+                   '                         ^^^^^^\n' +
+                   '                           1\n' +
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
                    '\n' +
@@ -41,15 +43,15 @@ describe('parseJson', function() {
   });
 
   it('returns a Just when applied to a valid JSON string', function() {
-    eq(S.parseJson(Array, '["foo","bar"]'), S.Just(['foo', 'bar']));
+    eq(S.parseJson(T, '["foo","bar"]'), S.Just(['foo', 'bar']));
   });
 
   it('returns a Nothing when applied to an invalid JSON string', function() {
-    eq(S.parseJson(Object, '[Invalid JSON]'), S.Nothing());
+    eq(S.parseJson(T, '[Invalid JSON]'), S.Nothing());
   });
 
-  it('returns a Nothing when the parsed result is not a member of the given type', function() {
-    eq(S.parseJson(Array, '{"foo":"bar"}'), S.Nothing());
+  it('returns a Nothing when the predicate returns false', function() {
+    eq(S.parseJson(F, '{"foo":"bar"}'), S.Nothing());
   });
 
 });
