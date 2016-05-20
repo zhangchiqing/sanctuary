@@ -20,21 +20,33 @@ describe('get', function() {
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
-                   'get :: Accessible a => Function -> String -> a -> Maybe c\n' +
-                   '                       ^^^^^^^^\n' +
-                   '                          1\n' +
+                   'get :: Accessible a => (Any -> Boolean) -> String -> a -> Maybe c\n' +
+                   '                       ^^^^^^^^^^^^^^^^\n' +
+                   '                              1\n' +
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+                   'The value at position 1 is not a member of ‘Any -> Boolean’.\n'));
+
+    throws(function() { S.get(String, 'x', {x: 'a'}); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'get :: Accessible a => (Any -> Boolean) -> String -> a -> Maybe c\n' +
+                   '                               ^^^^^^^\n' +
+                   '                                  1\n' +
+                   '\n' +
+                   '1)  "a" :: String\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Boolean’.\n'));
 
     throws(function() { S.get(T, [1, 2, 3]); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
-                   'get :: Accessible a => Function -> String -> a -> Maybe c\n' +
-                   '                                   ^^^^^^\n' +
-                   '                                     1\n' +
+                   'get :: Accessible a => (Any -> Boolean) -> String -> a -> Maybe c\n' +
+                   '                                           ^^^^^^\n' +
+                   '                                             1\n' +
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
                    '\n' +
@@ -44,9 +56,9 @@ describe('get', function() {
            errorEq(TypeError,
                    'Type-class constraint violation\n' +
                    '\n' +
-                   'get :: Accessible a => Function -> String -> a -> Maybe c\n' +
-                   '       ^^^^^^^^^^^^                          ^\n' +
-                   '                                             1\n' +
+                   'get :: Accessible a => (Any -> Boolean) -> String -> a -> Maybe c\n' +
+                   '       ^^^^^^^^^^^^                                  ^\n' +
+                   '                                                     1\n' +
                    '\n' +
                    '1)  null :: Null\n' +
                    '\n' +

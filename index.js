@@ -279,6 +279,9 @@
   var l = $.TypeVariable('l');
   var r = $.TypeVariable('r');
 
+  //  Predicate :: Type
+  var Predicate = $._UnaryFunction($.Any, $.Boolean);
+
   //  $Either :: Type -> Type -> Type
   var $Either = $.BinaryType(
     'sanctuary/Either',
@@ -2587,7 +2590,7 @@
   S.pluck =
   def('pluck',
       {a: [Accessible]},
-      [$.Function, $.String, $.Array(a), $.Array($Maybe(c))],
+      [Predicate, $.String, $.Array(a), $.Array($Maybe(c))],
       function(pred, key, xs) { return R.map(get(pred, key), xs); });
 
   //# reduce :: Foldable f => (a -> b -> a) -> a -> f b -> a
@@ -2706,7 +2709,7 @@
   var get = S.get =
   def('get',
       {a: [Accessible]},
-      [$.Function, $.String, a, $Maybe(c)],
+      [Predicate, $.String, a, $Maybe(c)],
       function(pred, key, obj) { return filter(pred, Just(obj[key])); });
 
   //# gets :: Accessible a => (b -> Boolean) -> [String] -> a -> Maybe c
@@ -2731,7 +2734,7 @@
   S.gets =
   def('gets',
       {a: [Accessible]},
-      [$.Function, $.Array($.String), a, $Maybe(c)],
+      [Predicate, $.Array($.String), a, $Maybe(c)],
       function(pred, keys, obj) {
         var x = obj;
         for (var idx = 0; idx < keys.length; idx += 1) {
@@ -3166,7 +3169,7 @@
   S.parseJson =
   def('parseJson',
       {},
-      [$.Function, $.String, $Maybe(b)],
+      [Predicate, $.String, $Maybe(b)],
       function(pred, s) { return filter(pred, encase(JSON.parse, s)); });
 
   //. ### RegExp

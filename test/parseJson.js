@@ -21,21 +21,33 @@ describe('parseJson', function() {
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
-                   'parseJson :: Function -> String -> Maybe b\n' +
-                   '             ^^^^^^^^\n' +
-                   '                1\n' +
+                   'parseJson :: (Any -> Boolean) -> String -> Maybe b\n' +
+                   '             ^^^^^^^^^^^^^^^^\n' +
+                   '                    1\n' +
                    '\n' +
                    '1)  "String" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+                   'The value at position 1 is not a member of ‘Any -> Boolean’.\n'));
+
+    throws(function() { S.parseJson(String, '"a"'); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'parseJson :: (Any -> Boolean) -> String -> Maybe b\n' +
+                   '                     ^^^^^^^\n' +
+                   '                        1\n' +
+                   '\n' +
+                   '1)  "a" :: String\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Boolean’.\n'));
 
     throws(function() { S.parseJson(T, [1, 2, 3]); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
-                   'parseJson :: Function -> String -> Maybe b\n' +
-                   '                         ^^^^^^\n' +
-                   '                           1\n' +
+                   'parseJson :: (Any -> Boolean) -> String -> Maybe b\n' +
+                   '                                 ^^^^^^\n' +
+                   '                                   1\n' +
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
                    '\n' +
