@@ -2574,12 +2574,12 @@
         return Nothing();
       });
 
-  //# pluck :: Accessible a => (b -> Boolean) -> String -> [a] -> [Maybe c]
+  //# pluck :: Accessible a => (b -> Boolean) -> String -> Array a -> Array (Maybe c)
   //.
-  //. Takes a predicate, a property name, and a list of objects and returns a
-  //. list of equal length. Each element of the output list is Just the value
-  //. of the specified property of the corresponding object if the value passes
-  //. the given predicate; Nothing otherwise.
+  //. Takes a predicate, a property name, and an array of objects and returns
+  //. an array of equal length. Each element of the output array is Just the
+  //. value of the specified property of the corresponding object if the value
+  //. passes the given predicate; Nothing otherwise.
   //.
   //. See also [`get`](#get).
   //.
@@ -2712,10 +2712,10 @@
       [Predicate, $.String, a, $Maybe(c)],
       function(pred, key, obj) { return filter(pred, Just(obj[key])); });
 
-  //# gets :: Accessible a => (b -> Boolean) -> [String] -> a -> Maybe c
+  //# gets :: Accessible a => (b -> Boolean) -> Array String -> a -> Maybe c
   //.
-  //. Takes a predicate, a list of property names, and an object and returns
-  //. Just the value at the path specified by the list of property names if
+  //. Takes a predicate, an array of property names, and an object and returns
+  //. Just the value at the path specified by the array of property names if
   //. such a path exists and the value passes the given predicate; Nothing
   //. otherwise.
   //.

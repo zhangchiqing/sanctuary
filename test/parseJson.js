@@ -5,8 +5,6 @@ var throws = require('assert').throws;
 var eq = require('./utils').eq;
 var errorEq = require('./utils').errorEq;
 var S = require('..');
-var T = function() { return true; };
-var F = function() { return false; };
 
 
 describe('parseJson', function() {
@@ -41,7 +39,7 @@ describe('parseJson', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘Boolean’.\n'));
 
-    throws(function() { S.parseJson(T, [1, 2, 3]); },
+    throws(function() { S.parseJson(S.K(true), [1, 2, 3]); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -55,15 +53,15 @@ describe('parseJson', function() {
   });
 
   it('returns a Just when applied to a valid JSON string', function() {
-    eq(S.parseJson(T, '["foo","bar"]'), S.Just(['foo', 'bar']));
+    eq(S.parseJson(S.K(true), '["foo","bar"]'), S.Just(['foo', 'bar']));
   });
 
   it('returns a Nothing when applied to an invalid JSON string', function() {
-    eq(S.parseJson(T, '[Invalid JSON]'), S.Nothing());
+    eq(S.parseJson(S.K(true), '[Invalid JSON]'), S.Nothing());
   });
 
   it('returns a Nothing when the predicate returns false', function() {
-    eq(S.parseJson(F, '{"foo":"bar"}'), S.Nothing());
+    eq(S.parseJson(S.K(false), '{"foo":"bar"}'), S.Nothing());
   });
 
 });

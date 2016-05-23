@@ -5,7 +5,6 @@ var throws = require('assert').throws;
 var eq = require('./utils').eq;
 var errorEq = require('./utils').errorEq;
 var S = require('..');
-var T = function() { return true; };
 
 
 describe('pluck', function() {
@@ -40,7 +39,7 @@ describe('pluck', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘Boolean’.\n'));
 
-    throws(function() { S.pluck(T, [1, 2, 3]); },
+    throws(function() { S.pluck(S.K(true), [1, 2, 3]); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -52,7 +51,7 @@ describe('pluck', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘String’.\n'));
 
-    throws(function() { S.pluck(T, 'x', {length: 0}); },
+    throws(function() { S.pluck(S.K(true), 'x', {length: 0}); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -73,9 +72,9 @@ describe('pluck', function() {
   });
 
   it('is curried', function() {
-    eq(S.pluck(T).length, 2);
-    eq(S.pluck(T)('x').length, 1);
-    eq(S.pluck(T)('x')([{x: 42}]), [S.Just(42)]);
+    eq(S.pluck(S.K(true)).length, 2);
+    eq(S.pluck(S.K(true))('x').length, 1);
+    eq(S.pluck(S.K(true))('x')([{x: 42}]), [S.Just(42)]);
   });
 
 });

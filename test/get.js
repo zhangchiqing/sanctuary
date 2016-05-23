@@ -4,8 +4,6 @@ var throws = require('assert').throws;
 var eq = require('./utils').eq;
 var errorEq = require('./utils').errorEq;
 var S = require('..');
-var T = function() { return true; };
-var F = function() { return false; };
 
 
 describe('get', function() {
@@ -40,7 +38,7 @@ describe('get', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘Boolean’.\n'));
 
-    throws(function() { S.get(T, [1, 2, 3]); },
+    throws(function() { S.get(S.K(true), [1, 2, 3]); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -52,7 +50,7 @@ describe('get', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘String’.\n'));
 
-    throws(function() { S.get(T, 'x', null); },
+    throws(function() { S.get(S.K(true), 'x', null); },
            errorEq(TypeError,
                    'Type-class constraint violation\n' +
                    '\n' +
@@ -66,11 +64,11 @@ describe('get', function() {
   });
 
   it('returns Nothing if the predicate returns false', function() {
-    eq(S.get(F, 'x', {x: 1}), S.Nothing());
+    eq(S.get(S.K(false), 'x', {x: 1}), S.Nothing());
   });
 
   it('returns Just if the predicate returns true', function() {
-    eq(S.get(T, 'x', {x: 1}), S.Just(1));
+    eq(S.get(S.K(true), 'x', {x: 1}), S.Just(1));
   });
 
   it('returns a Maybe', function() {
@@ -82,9 +80,9 @@ describe('get', function() {
   });
 
   it('is curried', function() {
-    eq(S.get(T).length, 2);
-    eq(S.get(T)('x').length, 1);
-    eq(S.get(T)('x')({x: 42}), S.Just(42));
+    eq(S.get(S.K(true)).length, 2);
+    eq(S.get(S.K(true))('x').length, 1);
+    eq(S.get(S.K(true))('x')({x: 42}), S.Just(42));
   });
 
 });
