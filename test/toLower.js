@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('toLower', function() {
@@ -12,20 +10,7 @@ describe('toLower', function() {
   it('is a unary function', function() {
     eq(typeof S.toLower, 'function');
     eq(S.toLower.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.toLower(true); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'toLower :: String -> String\n' +
-                   '           ^^^^^^\n' +
-                   '             1\n' +
-                   '\n' +
-                   '1)  true :: Boolean\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+    eq(S.toLower.toString(), 'toLower :: String -> String');
   });
 
   it('returns the lower-case equivalent of its argument', function() {

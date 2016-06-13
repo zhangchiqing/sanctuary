@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('eitherToMaybe', function() {
@@ -12,20 +10,7 @@ describe('eitherToMaybe', function() {
   it('is a unary function', function() {
     eq(typeof S.eitherToMaybe, 'function');
     eq(S.eitherToMaybe.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.eitherToMaybe(/XXX/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'eitherToMaybe :: Either a b -> Maybe b\n' +
-                   '                 ^^^^^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  /XXX/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Either a b’.\n'));
+    eq(S.eitherToMaybe.toString(), 'eitherToMaybe :: Either a b -> Maybe b');
   });
 
   it('returns Nothing when applied to a Left', function() {

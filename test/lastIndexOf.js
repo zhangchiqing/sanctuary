@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('lastIndexOf', function() {
@@ -12,20 +10,7 @@ describe('lastIndexOf', function() {
   it('is a binary function', function() {
     eq(typeof S.lastIndexOf, 'function');
     eq(S.lastIndexOf.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.lastIndexOf('x', null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'lastIndexOf :: a -> List a -> Maybe Integer\n' +
-                   '                    ^^^^^^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.lastIndexOf.toString(), 'lastIndexOf :: a -> List a -> Maybe Integer');
   });
 
   it('returns Nothing for an empty list', function() {
@@ -43,11 +28,6 @@ describe('lastIndexOf', function() {
   it('can operate on strings', function() {
     eq(S.lastIndexOf('an', 'banana'), S.Just(3));
     eq(S.lastIndexOf('ax', 'banana'), S.Nothing);
-  });
-
-  it('is curried', function() {
-    eq(S.lastIndexOf('c').length, 1);
-    eq(S.lastIndexOf('c')(['a', 'b', 'c', 'd', 'e']), S.Just(2));
   });
 
 });

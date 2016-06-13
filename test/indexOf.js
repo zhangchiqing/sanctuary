@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('indexOf', function() {
@@ -12,20 +10,7 @@ describe('indexOf', function() {
   it('is a binary function', function() {
     eq(typeof S.indexOf, 'function');
     eq(S.indexOf.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.indexOf('x', null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'indexOf :: a -> List a -> Maybe Integer\n' +
-                   '                ^^^^^^\n' +
-                   '                  1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.indexOf.toString(), 'indexOf :: a -> List a -> Maybe Integer');
   });
 
   it('returns Nothing for an empty list', function() {
@@ -43,11 +28,6 @@ describe('indexOf', function() {
   it('can operate on strings', function() {
     eq(S.indexOf('an', 'banana'), S.Just(1));
     eq(S.indexOf('ax', 'banana'), S.Nothing);
-  });
-
-  it('is curried', function() {
-    eq(S.indexOf('c').length, 1);
-    eq(S.indexOf('c')(['a', 'b', 'c', 'd', 'e']), S.Just(2));
   });
 
 });

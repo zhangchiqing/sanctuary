@@ -1,11 +1,10 @@
 'use strict';
 
-var throws = require('assert').throws;
 var vm = require('vm');
 
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('is', function() {
@@ -13,20 +12,7 @@ describe('is', function() {
   it('is a binary function', function() {
     eq(typeof S.is, 'function');
     eq(S.is.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.is([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'is :: TypeRep -> Any -> Boolean\n' +
-                   '      ^^^^^^^\n' +
-                   '         1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘TypeRep’.\n'));
+    eq(S.is.toString(), 'is :: TypeRep a -> Any -> Boolean');
   });
 
   it('works for built-in type', function() {
@@ -61,11 +47,6 @@ describe('is', function() {
   it('does not rely on varructor identity', function() {
     eq(S.is(Array, vm.runInNewContext('[1, 2, 3]')), true);
     eq(S.is(vm.runInNewContext('Array'), [1, 2, 3]), true);
-  });
-
-  it('is curried', function() {
-    eq(S.is(Array).length, 1);
-    eq(S.is(Array)([]), true);
   });
 
 });

@@ -1,7 +1,8 @@
 'use strict';
 
-var eq = require('./utils').eq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('meld', function() {
@@ -9,6 +10,7 @@ describe('meld', function() {
   it('is a unary function', function() {
     eq(typeof S.meld, 'function');
     eq(S.meld.length, 1);
+    eq(S.meld.toString(), 'meld :: Array Function -> Function');
   });
 
   it('composes a list of unary functions', function() {

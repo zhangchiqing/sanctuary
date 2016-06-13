@@ -1,14 +1,11 @@
 'use strict';
 
-var assert = require('assert');
-var throws = assert.throws;
-
 var R = require('ramda');
 
-var eq = require('../utils').eq;
-var errorEq = require('../utils').errorEq;
 var S = require('../..');
-var square = require('../utils').square;
+
+var eq = require('../internal/eq');
+var square = require('../internal/square');
 
 
 describe('Nothing', function() {
@@ -21,71 +18,27 @@ describe('Nothing', function() {
 
   it('provides an "ap" method', function() {
     eq(S.Nothing.ap.length, 1);
+    eq(S.Nothing.ap.toString(), 'Maybe#ap :: Maybe (a -> b) ~> Maybe a -> Maybe b');
     eq(S.Nothing.ap(S.Nothing), S.Nothing);
     eq(S.Nothing.ap(S.Just(42)), S.Nothing);
-
-    throws(function() { S.Nothing.ap([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#ap :: Maybe Function -> Maybe a -> Maybe b\n' +
-                   '                              ^^^^^^^\n' +
-                   '                                 1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array FiniteNumber, Array NonZeroFiniteNumber, Array Integer, Array ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
   });
 
   it('provides a "chain" method', function() {
     eq(S.Nothing.chain.length, 1);
+    eq(S.Nothing.chain.toString(), 'Maybe#chain :: Maybe a ~> (a -> Maybe b) -> Maybe b');
     eq(S.Nothing.chain(S.head), S.Nothing);
-
-    throws(function() { S.Nothing.chain(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#chain :: Maybe a -> Function -> Maybe b\n' +
-                   '                          ^^^^^^^^\n' +
-                   '                             1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
   });
 
   it('provides a "concat" method', function() {
     eq(S.Nothing.concat.length, 1);
+    eq(S.Nothing.concat.toString(), 'Maybe#concat :: Semigroup a => Maybe a ~> Maybe a -> Maybe a');
     eq(S.Nothing.concat(S.Nothing), S.Nothing);
     eq(S.Nothing.concat(S.Just('foo')), S.Just('foo'));
-
-    throws(function() { S.Nothing.concat(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#concat :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                                          ^^^^^^^\n' +
-                   '                                             1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
-
-    throws(function() { S.Nothing.concat(S.Just(1)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'Maybe#concat :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^                     ^\n' +
-                   '                                                1\n' +
-                   '\n' +
-                   '1)  1 :: Number, FiniteNumber, NonZeroFiniteNumber, Integer, ValidNumber\n' +
-                   '\n' +
-                   '‘Maybe#concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
   });
 
   it('provides an "equals" method', function() {
     eq(S.Nothing.equals.length, 1);
+    eq(S.Nothing.equals.toString(), 'Maybe#equals :: Maybe a ~> b -> Boolean');
     eq(S.Nothing.equals(S.Nothing), true);
     eq(S.Nothing.equals(S.Just(42)), false);
     eq(S.Nothing.equals(null), false);
@@ -93,30 +46,19 @@ describe('Nothing', function() {
 
   it('provides an "extend" method', function() {
     eq(S.Nothing.extend.length, 1);
+    eq(S.Nothing.extend.toString(), 'Maybe#extend :: Maybe a ~> (Maybe a -> a) -> Maybe a');
     eq(S.Nothing.extend(function(x) { return x.value / 2; }), S.Nothing);
 
     // associativity
     var w = S.Nothing;
     var f = function(x) { return x.value + 1; };
     var g = function(x) { return x.value * x.value; };
-    eq(w.extend(g).extend(f),
-       w.extend(function(_w) { return f(_w.extend(g)); }));
-
-    throws(function() { S.Nothing.extend(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#extend :: Maybe a -> Function -> Maybe a\n' +
-                   '                           ^^^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(w.extend(g).extend(f), w.extend(function(_w) { return f(_w.extend(g)); }));
   });
 
   it('provides a "filter" method', function() {
     eq(S.Nothing.filter.length, 1);
+    eq(S.Nothing.filter.toString(), 'Maybe#filter :: Maybe a ~> (a -> Boolean) -> Maybe a');
     eq(S.Nothing.filter(R.T), S.Nothing);
     eq(S.Nothing.filter(R.F), S.Nothing);
 
@@ -125,70 +67,37 @@ describe('Nothing', function() {
     var p = function(n) { return n < 0; };
     var q = function(n) { return n > 0; };
 
-    assert(m.map(f).filter(p)
-           .equals(m.filter(function(x) { return p(f(x)); }).map(f)));
-    assert(m.map(f).filter(q)
-           .equals(m.filter(function(x) { return q(f(x)); }).map(f)));
-
-    throws(function() { S.Nothing.filter(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#filter :: Maybe a -> Function -> Maybe a\n' +
-                   '                           ^^^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(m.map(f).filter(p).equals(m.filter(function(x) { return p(f(x)); }).map(f)), true);
+    eq(m.map(f).filter(q).equals(m.filter(function(x) { return q(f(x)); }).map(f)), true);
   });
 
   it('provides a "map" method', function() {
     eq(S.Nothing.map.length, 1);
+    eq(S.Nothing.map.toString(), 'Maybe#map :: Maybe a ~> (a -> b) -> Maybe b');
     eq(S.Nothing.map(function() { return 42; }), S.Nothing);
-
-    throws(function() { S.Nothing.map(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#map :: Maybe a -> Function -> Maybe b\n' +
-                   '                        ^^^^^^^^\n' +
-                   '                           1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
   });
 
   it('provides a "reduce" method', function() {
     eq(S.Nothing.reduce.length, 2);
-    eq(S.Nothing.reduce(function(a, b) { return a + b; }, 10), 10);
-
-    throws(function() { S.Nothing.reduce(null, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'Maybe#reduce :: Maybe a -> Function -> b -> b\n' +
-                   '                           ^^^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(S.Nothing.reduce.toString(), 'Maybe#reduce :: Maybe a ~> ((b, a) -> b) -> b -> b');
+    eq(S.Nothing.reduce(function(x, y) { return x - y; }, 42), 42);
   });
 
   it('provides a "sequence" method', function() {
     eq(S.Nothing.sequence.length, 1);
+    eq(S.Nothing.sequence.toString(), 'Maybe#sequence :: Applicative f => Maybe (f a) ~> (a -> f a) -> f (Maybe a)');
     eq(S.Nothing.sequence(S.Either.of), S.Right(S.Nothing));
   });
 
   it('provides a "toBoolean" method', function() {
     eq(S.Nothing.toBoolean.length, 0);
+    eq(S.Nothing.toBoolean.toString(), 'Maybe#toBoolean :: Maybe a ~> () -> Boolean');
     eq(S.Nothing.toBoolean(), false);
   });
 
   it('provides a "toString" method', function() {
     eq(S.Nothing.toString.length, 0);
+    eq(S.Nothing.toString.toString(), 'Maybe#toString :: Maybe a ~> () -> String');
     eq(S.Nothing.toString(), 'Nothing');
   });
 
@@ -203,17 +112,17 @@ describe('Nothing', function() {
     var c = S.Nothing;
 
     // associativity
-    assert(a.concat(b).concat(c).equals(a.concat(b.concat(c))));
+    eq(a.concat(b).concat(c).equals(a.concat(b.concat(c))), true);
   });
 
   it('implements Monoid', function() {
     var a = S.Nothing;
 
     // left identity
-    assert(a.empty().concat(a).equals(a));
+    eq(a.empty().concat(a).equals(a), true);
 
     // right identity
-    assert(a.concat(a.empty()).equals(a));
+    eq(a.concat(a.empty()).equals(a), true);
   });
 
   it('implements Functor', function() {
@@ -222,10 +131,10 @@ describe('Nothing', function() {
     var g = square;
 
     // identity
-    assert(a.map(S.I).equals(a));
+    eq(a.map(S.I).equals(a), true);
 
     // composition
-    assert(a.map(function(x) { return f(g(x)); }).equals(a.map(g).map(f)));
+    eq(a.map(function(x) { return f(g(x)); }).equals(a.map(g).map(f)), true);
   });
 
   it('implements Apply', function() {
@@ -234,13 +143,13 @@ describe('Nothing', function() {
     var c = S.Nothing;
 
     // composition
-    assert(a.map(function(f) {
+    eq(a.map(function(f) {
       return function(g) {
         return function(x) {
           return f(g(x));
         };
       };
-    }).ap(b).ap(c).equals(a.ap(b.ap(c))));
+    }).ap(b).ap(c).equals(a.ap(b.ap(c))), true);
   });
 
   it('implements Applicative', function() {
@@ -250,13 +159,13 @@ describe('Nothing', function() {
     var x = 7;
 
     // identity
-    assert(a.of(S.I).ap(b).equals(b));
+    eq(a.of(S.I).ap(b).equals(b), true);
 
     // homomorphism
-    assert(a.of(f).ap(a.of(x)).equals(a.of(f(x))));
+    eq(a.of(f).ap(a.of(x)).equals(a.of(f(x))), true);
 
     // interchange
-    assert(a.of(function(f) { return f(x); }).ap(b).equals(b.ap(a.of(x))));
+    eq(a.of(function(f) { return f(x); }).ap(b).equals(b.ap(a.of(x))), true);
   });
 
   it('implements Chain', function() {
@@ -265,8 +174,7 @@ describe('Nothing', function() {
     var g = S.last;
 
     // associativity
-    assert(a.chain(f).chain(g)
-           .equals(a.chain(function(x) { return f(x).chain(g); })));
+    eq(a.chain(f).chain(g).equals(a.chain(function(x) { return f(x).chain(g); })), true);
   });
 
   it('implements Monad', function() {
@@ -275,10 +183,10 @@ describe('Nothing', function() {
     var x = [1, 2, 3];
 
     // left identity
-    assert(a.of(x).chain(f).equals(f(x)));
+    eq(a.of(x).chain(f).equals(f(x)), true);
 
     // right identity
-    assert(a.chain(a.of).equals(a));
+    eq(a.chain(a.of).equals(a), true);
   });
 
 });

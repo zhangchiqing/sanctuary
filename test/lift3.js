@@ -1,12 +1,11 @@
 'use strict';
 
-var throws = require('assert').throws;
 var R = require('ramda');
 
-var area = require('./utils').area;
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var area = require('./internal/area');
+var eq = require('./internal/eq');
 
 
 describe('lift3', function() {
@@ -14,20 +13,7 @@ describe('lift3', function() {
   it('is a quaternary function', function() {
     eq(typeof S.lift3, 'function');
     eq(S.lift3.length, 4);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.lift3('wrong'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'lift3 :: (Apply a, Apply b, Apply c, Apply d) => Function -> a -> b -> c -> d\n' +
-                   '                                                 ^^^^^^^^\n' +
-                   '                                                    1\n' +
-                   '\n' +
-                   '1)  "wrong" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+    eq(S.lift3.toString(), 'lift3 :: Apply f => (a -> b -> c -> d) -> f a -> f b -> f c -> f d');
   });
 
   it('lifts a function into the context of Applys', function() {

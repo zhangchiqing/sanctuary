@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('unlines', function() {
@@ -12,20 +10,7 @@ describe('unlines', function() {
   it('is a unary function', function() {
     eq(typeof S.unlines, 'function');
     eq(S.unlines.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.unlines(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'unlines :: Array String -> String\n' +
-                   '           ^^^^^^^^^^^^\n' +
-                   '                1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Array String’.\n'));
+    eq(S.unlines.toString(), 'unlines :: Array String -> String');
   });
 
   it('joins a list of lines after appending "\n" to each', function() {
