@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('max', function() {
@@ -12,44 +10,7 @@ describe('max', function() {
   it('is a binary function', function() {
     eq(typeof S.max, 'function');
     eq(S.max.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.max(/x/); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'max :: Ord a => a -> a -> a\n' +
-                   '       ^^^^^    ^\n' +
-                   '                1\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   '‘max’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.\n'));
-
-    throws(function() { S.max(NaN); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'max :: Ord a => a -> a -> a\n' +
-                   '       ^^^^^    ^\n' +
-                   '                1\n' +
-                   '\n' +
-                   '1)  NaN :: Number\n' +
-                   '\n' +
-                   '‘max’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.\n'));
-
-    throws(function() { S.max(new Date('XXX')); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'max :: Ord a => a -> a -> a\n' +
-                   '       ^^^^^    ^\n' +
-                   '                1\n' +
-                   '\n' +
-                   '1)  new Date(NaN) :: Date\n' +
-                   '\n' +
-                   '‘max’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.\n'));
+    eq(S.max.toString(), 'max :: Ord a => a -> a -> a');
   });
 
   it('can be applied to (valid) numbers', function() {
@@ -73,11 +34,6 @@ describe('max', function() {
     eq(S.max('2', '10'), '2');
     eq(S.max('A', 'a'), 'a');
     eq(S.max('a', 'A'), 'a');
-  });
-
-  it('is curried', function() {
-    eq(S.max(10).length, 1);
-    eq(S.max(10)(2), 10);
   });
 
 });

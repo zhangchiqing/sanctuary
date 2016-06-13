@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('mean', function() {
@@ -12,44 +10,7 @@ describe('mean', function() {
   it('is a unary function', function() {
     eq(typeof S.mean, 'function');
     eq(S.mean.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.mean('xxx'); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'mean :: Foldable f => f -> Maybe FiniteNumber\n' +
-                   '        ^^^^^^^^^^    ^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  "xxx" :: String\n' +
-                   '\n' +
-                   '‘mean’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.\n'));
-
-    throws(function() { S.mean([1, 2, 'xxx']); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'mean :: Foldable f => f -> Maybe FiniteNumber\n' +
-                   '                      ^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  [1, 2, "xxx"] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
-
-    throws(function() { S.mean([1, Infinity]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'mean :: Foldable f => f -> Maybe FiniteNumber\n' +
-                   '                                 ^^^^^^^^^^^^\n' +
-                   '                                      1\n' +
-                   '\n' +
-                   '1)  Infinity :: Number, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘FiniteNumber’.\n'));
+    eq(S.mean.toString(), 'mean :: Foldable f => f FiniteNumber -> Maybe FiniteNumber');
   });
 
   it('returns the mean of a non-empty array of numbers', function() {

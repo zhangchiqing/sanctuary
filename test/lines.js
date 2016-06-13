@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('lines', function() {
@@ -12,20 +10,7 @@ describe('lines', function() {
   it('is a unary function', function() {
     eq(typeof S.lines, 'function');
     eq(S.lines.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.lines(['foo']); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'lines :: String -> Array String\n' +
-                   '         ^^^^^^\n' +
-                   '           1\n' +
-                   '\n' +
-                   '1)  ["foo"] :: Array String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+    eq(S.lines.toString(), 'lines :: String -> Array String');
   });
 
   it('splits a string into a list of lines', function() {

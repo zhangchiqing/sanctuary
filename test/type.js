@@ -2,8 +2,9 @@
 
 var vm = require('vm');
 
-var eq = require('./utils').eq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('type', function() {
@@ -11,11 +12,11 @@ describe('type', function() {
   it('is a unary function', function() {
     eq(typeof S.type, 'function');
     eq(S.type.length, 1);
+    eq(S.type.toString(), 'type :: Any -> String');
   });
 
   it('operates on values of built-in types', function() {
-    eq(S.type((function() { return arguments; }())),
-       'Arguments');
+    eq(S.type((function() { return arguments; }())), 'Arguments');
     eq(S.type([]),                  'Array');
     eq(S.type(false),               'Boolean');
     eq(S.type(new Date(0)),         'Date');

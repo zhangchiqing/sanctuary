@@ -1,12 +1,11 @@
 'use strict';
 
-var throws = require('assert').throws;
-
 var $ = require('sanctuary-def');
 
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
+var throws = require('./internal/throws');
 
 
 //  customEnv :: Array Type
@@ -23,32 +22,33 @@ describe('create', function() {
   it('is a unary function', function() {
     eq(typeof S.create, 'function');
     eq(S.create.length, 1);
+    eq(S.create.toString(), 'create :: { checkTypes :: Boolean, env :: Array Any } -> Object');
   });
 
   it('type checks its arguments', function() {
     throws(function() { S.create({}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'create :: { checkTypes :: Boolean, env :: Array Any } -> Object\n' +
-                   '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                               1\n' +
-                   '\n' +
-                   '1)  {} :: Object, StrMap ???\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'create :: { checkTypes :: Boolean, env :: Array Any } -> Object\n' +
+           '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                               1\n' +
+           '\n' +
+           '1)  {} :: Object, StrMap ???\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.\n');
 
     throws(function() { S.create({checkTypes: 'true', env: []}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'create :: { checkTypes :: Boolean, env :: Array Any } -> Object\n' +
-                   '                          ^^^^^^^\n' +
-                   '                             1\n' +
-                   '\n' +
-                   '1)  "true" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Boolean’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'create :: { checkTypes :: Boolean, env :: Array Any } -> Object\n' +
+           '                          ^^^^^^^\n' +
+           '                             1\n' +
+           '\n' +
+           '1)  "true" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Boolean’.\n');
   });
 
   it('returns a Sanctuary module', function() {
@@ -66,16 +66,16 @@ describe('create', function() {
 
   it('can create a module with a custom environment', function() {
     throws(function() { S.I(['foo', 'foo', 42]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'I :: a -> a\n' +
-                   '     ^\n' +
-                   '     1\n' +
-                   '\n' +
-                   '1)  ["foo", "foo", 42] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'I :: a -> a\n' +
+           '     ^\n' +
+           '     1\n' +
+           '\n' +
+           '1)  ["foo", "foo", 42] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     eq(checkedCustomEnv.I(['foo', 'foo', 42]), ['foo', 'foo', 42]);
   });

@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('dec', function() {
@@ -12,44 +10,7 @@ describe('dec', function() {
   it('is a unary function', function() {
     eq(typeof S.dec, 'function');
     eq(S.dec.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.dec('xxx'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dec :: FiniteNumber -> FiniteNumber\n' +
-                   '       ^^^^^^^^^^^^\n' +
-                   '            1\n' +
-                   '\n' +
-                   '1)  "xxx" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘FiniteNumber’.\n'));
-
-    throws(function() { S.dec(Infinity); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dec :: FiniteNumber -> FiniteNumber\n' +
-                   '       ^^^^^^^^^^^^\n' +
-                   '            1\n' +
-                   '\n' +
-                   '1)  Infinity :: Number, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘FiniteNumber’.\n'));
-
-    throws(function() { S.dec(-Infinity); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dec :: FiniteNumber -> FiniteNumber\n' +
-                   '       ^^^^^^^^^^^^\n' +
-                   '            1\n' +
-                   '\n' +
-                   '1)  -Infinity :: Number, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘FiniteNumber’.\n'));
+    eq(S.dec.toString(), 'dec :: FiniteNumber -> FiniteNumber');
   });
 
   it('decrements a number by one', function() {

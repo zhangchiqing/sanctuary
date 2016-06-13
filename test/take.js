@@ -1,9 +1,8 @@
 'use strict';
-var throws = require('assert').throws;
 
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('take', function() {
@@ -11,32 +10,7 @@ describe('take', function() {
   it('is a binary function', function() {
     eq(typeof S.take, 'function');
     eq(S.take.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.take(0.5); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'take :: Integer -> List a -> Maybe (List a)\n' +
-                   '        ^^^^^^^\n' +
-                   '           1\n' +
-                   '\n' +
-                   '1)  0.5 :: Number, FiniteNumber, NonZeroFiniteNumber, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
-
-    throws(function() { S.take(0, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'take :: Integer -> List a -> Maybe (List a)\n' +
-                   '                   ^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.take.toString(), 'take :: Integer -> List a -> Maybe (List a)');
   });
 
   it('returns Nothing if n is greater than collection length', function() {
@@ -65,11 +39,6 @@ describe('take', function() {
   it('returns Just the whole collection if n is equal to array length', function() {
     eq(S.take(5, ['a', 'b', 'c', 'd', 'e']), S.Just(['a', 'b', 'c', 'd', 'e']));
     eq(S.take(7, 'abcdefg'), S.Just('abcdefg'));
-  });
-
-  it('is curried', function() {
-    eq(S.take(3).length, 1);
-    eq(S.take(3)(['a', 'b', 'c', 'd', 'e']), S.Just(['a', 'b', 'c']));
   });
 
 });

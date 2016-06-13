@@ -1,9 +1,8 @@
 'use strict';
-var throws = require('assert').throws;
 
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('takeLast', function() {
@@ -11,32 +10,7 @@ describe('takeLast', function() {
   it('is a binary function', function() {
     eq(typeof S.takeLast, 'function');
     eq(S.takeLast.length, 2);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.takeLast(0.5); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'takeLast :: Integer -> List a -> Maybe (List a)\n' +
-                   '            ^^^^^^^\n' +
-                   '               1\n' +
-                   '\n' +
-                   '1)  0.5 :: Number, FiniteNumber, NonZeroFiniteNumber, ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
-
-    throws(function() { S.takeLast(0, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'takeLast :: Integer -> List a -> Maybe (List a)\n' +
-                   '                       ^^^^^^\n' +
-                   '                         1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.takeLast.toString(), 'takeLast :: Integer -> List a -> Maybe (List a)');
   });
 
   it('returns Nothing if n is negative', function() {
@@ -58,11 +32,6 @@ describe('takeLast', function() {
     eq(S.takeLast(2, 'abc'), S.Just('bc'));
     eq(S.takeLast(1, 'abc'), S.Just('c'));
     eq(S.takeLast(0, 'abc'), S.Just(''));
-  });
-
-  it('is curried', function() {
-    eq(S.takeLast(3).length, 1);
-    eq(S.takeLast(3)(['a', 'b', 'c', 'd', 'e']), S.Just(['c', 'd', 'e']));
   });
 
 });

@@ -206,7 +206,7 @@
 
   'use strict';
 
-  var _ = R.__;
+  var _ = $.__;
 
   var sentinel = {};
 
@@ -244,6 +244,9 @@
 
   //  negativeZero :: a -> Boolean
   var negativeZero = R.either(R.equals(-0), R.equals(new Number(-0)));
+
+  //  Fn :: (Type, Type) -> Type
+  var Fn = function(x, y) { return $.Function([x, y]); };
 
   //  Accessible :: TypeClass
   var Accessible = $.TypeClass(
@@ -312,7 +315,7 @@
   var b = $.TypeVariable('b');
   var c = $.TypeVariable('c');
   var d = $.TypeVariable('d');
-  var f = $.TypeVariable('f');
+  var f = $.UnaryTypeVariable('f');
   var l = $.TypeVariable('l');
   var r = $.TypeVariable('r');
 
@@ -342,15 +345,16 @@
     function(maybe) { return maybe.isJust ? [maybe.value] : []; }
   );
 
-  //  TypeRep :: Type
-  var TypeRep = $.NullaryType(
+  //  TypeRep :: Type -> Type
+  var TypeRep = $.UnaryType(
     'sanctuary/TypeRep',
     function(x) {
       return R.type(x) === 'Function' ||
              (x != null &&
               R.type(x.name) === 'String' &&
               R.type(x.test) === 'Function');
-    }
+    },
+    function(typeRep) { return []; }
   );
 
   //  defaultEnv :: Array Type
@@ -358,6 +362,7 @@
     $.FiniteNumber,
     $.NonZeroFiniteNumber,
     $Either,
+    $.Function([$.Unknown, $.Unknown]),
     $.Integer,
     $Maybe,
     $.Pair,
@@ -452,10 +457,22 @@
   //      than b-c-a order).
   var method = function(name, constraints, types, _f) {
     var f = def(name, constraints, types, _f);
-    return def(name,
-               constraints,
-               R.repeat($.Any, types.length - 1),
-               function() { return R.apply(f, R.prepend(this, arguments)); });
+
+    var sig = f.toString().split('').reduce(function(_, c) {
+      return c === '('                  ? {depth: _.depth + 1, sig: _.sig + c}
+           : c === ')'                  ? {depth: _.depth - 1, sig: _.sig + c}
+           : c === '-' && _.depth === 0 ? {depth: Infinity, sig: _.sig + '~'}
+           : /* otherwise */              {depth: _.depth, sig: _.sig + c};
+    }, {depth: 0, sig: ''}).sig;
+
+    var g = def(name,
+                constraints,
+                R.repeat($.Any, types.length - 1),
+                function() { return R.apply(f, R.prepend(this, arguments)); });
+    g.toString = function() {
+      return types.length === 2 ? sig.replace(' ~> ', ' ~> () -> ') : sig;
+    };
+    return g;
   };
 
   //  prop :: Accessible a => String -> a -> b
@@ -473,6 +490,41 @@
                               R.toString(obj) + ' does not');
         }
       });
+
+  //. ### Placeholder
+  //.
+  //. Sanctuary functions are designed with partial application in mind.
+  //. In many cases one can define a more specific function in terms of
+  //. a more general one simply by applying the more general function to
+  //. some (but not all) of its arguments. For example, one could define
+  //. `sum :: Foldable f => f Number -> Number` as `S.reduce(S.add, 0)`.
+  //.
+  //. In some cases, though, there are multiple orders in which one may
+  //. wish to provide a function's arguments. `S.concat('prefix')` is a
+  //. function which prefixes its argument, but how would one define a
+  //. function which suffixes its argument? It's possible with the help
+  //. of [`__`](#__), the special placeholder value.
+  //.
+  //. The placeholder indicates a hole to be filled at some future time.
+  //. The following are all equivalent (`_` represents the placeholder):
+  //.
+  //.   - `f(x, y, z)`
+  //.   - `f(_, y, z)(x)`
+  //.   - `f(_, _, z)(x, y)`
+  //.   - `f(_, _, z)(_, y)(x)`
+
+  //# __ :: Placeholder
+  //.
+  //. The special [placeholder](#placeholder) value.
+  //.
+  //. ```javascript
+  //. > R.map(S.concat('@'), ['foo', 'bar', 'baz'])
+  //. ['@foo', '@bar', '@baz']
+  //.
+  //. > R.map(S.concat(S.__, '?'), ['foo', 'bar', 'baz'])
+  //. ['foo?', 'bar?', 'baz?']
+  //. ```
+  S.__ = $.__;
 
   //. ### Classify
 
@@ -519,7 +571,7 @@
   var is = S.is =
   def('is',
       {},
-      [TypeRep, $.Any, $.Boolean],
+      [TypeRep(a), $.Any, $.Boolean],
       function(type, x) {
         return x != null && (
           R.type(type.prototype['@@type']) === 'String' ?
@@ -573,13 +625,13 @@
   //. > S.A(S.inc, 42)
   //. 43
   //.
-  //. > R.map(S.A(R.__, 100), [S.inc, Math.sqrt])
+  //. > R.map(S.A(S.__, 100), [S.inc, Math.sqrt])
   //. [101, 10]
   //. ```
   S.A =
   def('A',
       {},
-      [$.Function, a, b],
+      [Fn(a, b), a, b],
       function(f, x) { return f(x); });
 
   //# T :: a -> (a -> b) -> b
@@ -598,7 +650,7 @@
   S.T =
   def('T',
       {},
-      [a, $.Function, b],
+      [a, Fn(a, b), b],
       function(x, f) { return f(x); });
 
   //# C :: (a -> b -> c) -> b -> a -> c
@@ -621,7 +673,7 @@
   S.C =
   def('C',
       {},
-      [$.Function, b, a, c],
+      [Fn(a, Fn(b, c)), b, a, c],
       function(f, x, y) { return f(y)(x); });
 
   //# B :: (b -> c) -> (a -> b) -> a -> c
@@ -638,7 +690,7 @@
   S.B =
   def('B',
       {},
-      [$.Function, $.Function, a, c],
+      [Fn(b, c), Fn(a, b), a, c],
       compose3);
 
   //# S :: (a -> b -> c) -> (a -> b) -> a -> c
@@ -656,7 +708,7 @@
   S.S =
   def('S',
       {},
-      [$.Function, $.Function, a, c],
+      [Fn(a, Fn(b, c)), Fn(a, b), a, c],
       function(f, g, x) { return f(x)(g(x)); });
 
   //. ### Function
@@ -675,7 +727,7 @@
   S.flip =
   def('flip',
       {},
-      [$.Function, b, a, c],
+      [$.Function([a, b, c]), b, a, c],
       function(f, x, y) { return f(y, x); });
 
   //# lift :: Functor f => (a -> b) -> f a -> f b
@@ -691,8 +743,8 @@
   //. ```
   S.lift =
   def('lift',
-      {a: [Functor], b: [Functor]},
-      [$.Function, a, b],
+      {f: [Functor]},
+      [Fn(a, b), f(a), f(b)],
       R.map);
 
   //# lift2 :: Apply f => (a -> b -> c) -> f a -> f b -> f c
@@ -715,8 +767,8 @@
   //. ```
   S.lift2 =
   def('lift2',
-      {a: [Apply], b: [Apply], c: [Apply]},
-      [$.Function, a, b, c],
+      {f: [Apply]},
+      [Fn(a, Fn(b, c)), f(a), f(b), f(c)],
       function(f, x, y) { return R.ap(R.map(f, x), y); });
 
   //# lift3 :: Apply f => (a -> b -> c -> d) -> f a -> f b -> f c -> f d
@@ -733,8 +785,8 @@
   //. ```
   S.lift3 =
   def('lift3',
-      {a: [Apply], b: [Apply], c: [Apply], d: [Apply]},
-      [$.Function, a, b, c, d],
+      {f: [Apply]},
+      [Fn(a, Fn(b, Fn(c, d))), f(a), f(b), f(c), f(d)],
       function(f, x, y, z) { return R.ap(R.ap(R.map(f, x), y), z); });
 
   //. ### Composition
@@ -757,7 +809,7 @@
   var compose = S.compose =
   def('compose',
       {},
-      [$.Function, $.Function, a, c],
+      [Fn(b, c), Fn(a, b), a, c],
       compose3);
 
   //# pipe :: [(a -> b), (b -> c), ..., (m -> n)] -> a -> n
@@ -778,7 +830,7 @@
   S.pipe =
   def('pipe',
       {},
-      [$.Array($.Function), a, b],
+      [$.Array($.AnyFunction), a, b],
       function(fs, x) { return R.reduceRight(compose2, I, fs)(x); });
 
   //# meld :: [** -> *] -> (* -> * -> ... -> *)
@@ -810,7 +862,7 @@
   S.meld =
   def('meld',
       {},
-      [$.Array($.Function), $.Function],
+      [$.Array($.AnyFunction), $.AnyFunction],
       function(fs) {
         var n = 1 + sum(R.map(R.length, fs)) - fs.length;
         return R.curryN(n, function() {
@@ -922,7 +974,7 @@
   Maybe.prototype.ap =
   method('Maybe#ap',
          {},
-         [$Maybe($.Function), $Maybe(a), $Maybe(b)],
+         [$Maybe(Fn(a, b)), $Maybe(a), $Maybe(b)],
          function(mf, mx) { return mf.isJust ? mx.map(mf.value) : mf; });
 
   //# Maybe#chain :: Maybe a ~> (a -> Maybe b) -> Maybe b
@@ -943,7 +995,7 @@
   Maybe.prototype.chain =
   method('Maybe#chain',
          {},
-         [$Maybe(a), $.Function, $Maybe(b)],
+         [$Maybe(a), Fn(a, $Maybe(b)), $Maybe(b)],
          function(maybe, f) { return maybe.isJust ? f(maybe.value) : maybe; });
 
   //# Maybe#concat :: Semigroup a => Maybe a ~> Maybe a -> Maybe a
@@ -1048,7 +1100,7 @@
   Maybe.prototype.extend =
   method('Maybe#extend',
          {},
-         [$Maybe(a), $.Function, $Maybe(a)],
+         [$Maybe(a), Fn($Maybe(a), a), $Maybe(a)],
          function(maybe, f) { return maybe.isJust ? Just(f(maybe)) : maybe; });
 
   //# Maybe#filter :: Maybe a ~> (a -> Boolean) -> Maybe a
@@ -1066,7 +1118,7 @@
   Maybe.prototype.filter =
   method('Maybe#filter',
          {},
-         [$Maybe(a), $.Function, $Maybe(a)],
+         [$Maybe(a), Fn(a, $.Boolean), $Maybe(a)],
          function(maybe, pred) { return filter(pred, maybe); });
 
   //# Maybe#map :: Maybe a ~> (a -> b) -> Maybe b
@@ -1085,7 +1137,7 @@
   Maybe.prototype.map =
   method('Maybe#map',
          {},
-         [$Maybe(a), $.Function, $Maybe(b)],
+         [$Maybe(a), Fn(a, b), $Maybe(b)],
          function(maybe, f) {
            return maybe.isJust ? Just(f(maybe.value)) : maybe;
          });
@@ -1123,7 +1175,7 @@
   Maybe.prototype.reduce =
   method('Maybe#reduce',
          {},
-         [$Maybe(a), $.Function, b, b],
+         [$Maybe(a), $.Function([b, a, b]), b, b],
          function(maybe, f, x) {
            return maybe.isJust ? f(x, maybe.value) : x;
          });
@@ -1148,8 +1200,8 @@
   //. ```
   Maybe.prototype.sequence =
   method('Maybe#sequence',
-         {a: [Applicative], b: [Applicative]},
-         [$Maybe(a), $.Function, b],
+         {f: [Applicative]},
+         [$Maybe(f(a)), Fn(a, f(a)), f($Maybe(a))],
          function(maybe, of) {
            return maybe.isJust ? R.map(Just, maybe.value) : of(maybe);
          });
@@ -1335,7 +1387,7 @@
   var maybe = S.maybe =
   def('maybe',
       {},
-      [b, $.Function, $Maybe(a), b],
+      [b, Fn(a, b), $Maybe(a), b],
       function(x, f, maybe) { return fromMaybe(x, maybe.map(f)); });
 
   //# justs :: Array (Maybe a) -> Array a
@@ -1372,7 +1424,7 @@
   S.mapMaybe =
   def('mapMaybe',
       {},
-      [$.Function, $.Array(a), $.Array(b)],
+      [Fn(a, $Maybe(b)), $.Array(a), $.Array(b)],
       function(f, xs) { return justs(R.map(f, xs)); });
 
   //# encase :: (a -> b) -> a -> Maybe b
@@ -1394,7 +1446,7 @@
   var encase = S.encase =
   def('encase',
       {},
-      [$.Function, a, $Maybe(b)],
+      [Fn(a, b), a, $Maybe(b)],
       function(f, x) {
         try {
           return Just(f(x));
@@ -1411,7 +1463,7 @@
   var encase2 = S.encase2 =
   def('encase2',
       {},
-      [$.Function, a, b, $Maybe(c)],
+      [Fn(a, Fn(b, c)), a, b, $Maybe(c)],
       function(f, x, y) {
         try {
           return Just(f(x)(y));
@@ -1426,7 +1478,7 @@
   S.encase2_ =
   def('encase2_',
       {},
-      [$.Function, a, b, $Maybe(c)],
+      [$.Function([a, b, c]), a, b, $Maybe(c)],
       function(f_, x, y) {
         var f = function(x) {
           return function(y) {
@@ -1444,7 +1496,7 @@
   var encase3 = S.encase3 =
   def('encase3',
       {},
-      [$.Function, a, b, c, $Maybe(d)],
+      [Fn(a, Fn(b, Fn(c, d))), a, b, c, $Maybe(d)],
       function(f, x, y, z) {
         try {
           return Just(f(x)(y)(z));
@@ -1459,7 +1511,7 @@
   S.encase3_ =
   def('encase3_',
       {},
-      [$.Function, a, b, c, $Maybe(d)],
+      [$.Function([a, b, c, d]), a, b, c, $Maybe(d)],
       function(f_, x, y, z) {
         var f = function(x) {
           return function(y) {
@@ -1578,7 +1630,7 @@
   Either.prototype.ap =
   method('Either#ap',
          {},
-         [$Either(a, $.Function), $Either(a, b), $Either(a, c)],
+         [$Either(a, Fn(b, c)), $Either(a, b), $Either(a, c)],
          function(ef, ex) { return ef.isRight ? ex.map(ef.value) : ef; });
 
   //# Either#chain :: Either a b ~> (b -> Either a c) -> Either a c
@@ -1604,7 +1656,7 @@
   Either.prototype.chain =
   method('Either#chain',
          {},
-         [$Either(a, b), $.Function, $Either(a, c)],
+         [$Either(a, b), Fn(b, $Either(a, c)), $Either(a, c)],
          function(either, f) {
            return either.isRight ? f(either.value) : either;
          });
@@ -1693,7 +1745,7 @@
   Either.prototype.extend =
   method('Either#extend',
          {},
-         [$Either(a, b), $.Function, $Either(a, b)],
+         [$Either(a, b), Fn($Either(a, b), b), $Either(a, b)],
          function(either, f) {
            return either.isLeft ? either : Right(f(either));
          });
@@ -1714,7 +1766,7 @@
   Either.prototype.map =
   method('Either#map',
          {},
-         [$Either(a, b), $.Function, $Either(a, c)],
+         [$Either(a, b), Fn(b, c), $Either(a, c)],
          function(either, f) {
            return either.isRight ? Right(f(either.value)) : either;
          });
@@ -1752,7 +1804,7 @@
   Either.prototype.reduce =
   method('Either#reduce',
          {},
-         [$Either(a, b), $.Function, c, c],
+         [$Either(a, b), $.Function([c, b, c]), c, c],
          function(either, f, x) {
            return either.isRight ? f(x, either.value) : x;
          });
@@ -1778,8 +1830,8 @@
   //. ```
   Either.prototype.sequence =
   method('Either#sequence',
-         {b: [Applicative], c: [Applicative]},
-         [$Either(a, b), $.Function, c],
+         {f: [Applicative]},
+         [$Either(a, f(b)), Fn(b, f(b)), f($Either(a, b))],
          function(either, of) {
            return either.isRight ? R.map(Right, either.value) : of(either);
          });
@@ -1963,7 +2015,7 @@
   S.either =
   def('either',
       {},
-      [$.Function, $.Function, $Either(a, b), c],
+      [Fn(a, c), Fn(b, c), $Either(a, b), c],
       function(l, r, either) {
         return either.isLeft ? l(either.value) : r(either.value);
       });
@@ -2029,7 +2081,7 @@
   S.encaseEither =
   def('encaseEither',
       {},
-      [$.Function, $.Function, a, $Either(l, r)],
+      [Fn($.Error, l), Fn(a, r), a, $Either(l, r)],
       function(f, g, x) {
         try {
           return Right(g(x));
@@ -2046,7 +2098,7 @@
   var encaseEither2 = S.encaseEither2 =
   def('encaseEither2',
       {},
-      [$.Function, $.Function, a, b, $Either(l, r)],
+      [Fn($.Error, l), Fn(a, Fn(b, r)), a, b, $Either(l, r)],
       function(f, g, x, y) {
         try {
           return Right(g(x)(y));
@@ -2062,7 +2114,7 @@
   S.encaseEither2_ =
   def('encaseEither2_',
       {},
-      [$.Function, $.Function, a, b, $Either(l, r)],
+      [Fn($.Error, l), $.Function([a, b, r]), a, b, $Either(l, r)],
       function(f, g_, x, y) {
         var g = function(x) {
           return function(y) {
@@ -2080,7 +2132,7 @@
   var encaseEither3 = S.encaseEither3 =
   def('encaseEither3',
       {},
-      [$.Function, $.Function, a, b, c, $Either(l, r)],
+      [Fn($.Error, l), Fn(a, Fn(b, Fn(c, r))), a, b, c, $Either(l, r)],
       function(f, g, x, y, z) {
         try {
           return Right(g(x)(y)(z));
@@ -2094,9 +2146,9 @@
   //. Version of [`encaseEither3`](#encaseEither3) accepting uncurried
   //. functions.
   S.encaseEither3_ =
-  def('encaseEither3',
+  def('encaseEither3_',
       {},
-      [$.Function, $.Function, a, b, c, $Either(l, r)],
+      [Fn($.Error, l), $.Function([a, b, c, r]), a, b, c, $Either(l, r)],
       function(f, g_, x, y, z) {
         var g = function(x) {
           return function(y) {
@@ -2262,7 +2314,7 @@
   S.ifElse =
   def('ifElse',
       {},
-      [$.Function, $.Function, $.Function, a, b],
+      [Fn(a, $.Boolean), Fn(a, b), Fn(a, b), a, b],
       function(pred, f, g, x) { return pred(x) ? f(x) : g(x); });
 
   //# allPass :: Array (a -> Boolean) -> a -> Boolean
@@ -2282,7 +2334,7 @@
   S.allPass =
   def('allPass',
       {},
-      [$.Array($.Function), a, $.Boolean],
+      [$.Array(Fn(a, $.Boolean)), a, $.Boolean],
       function(preds, x) {
         for (var idx = 0; idx < preds.length; idx += 1) {
           if (!preds[idx](x)) return false;
@@ -2307,7 +2359,7 @@
   S.anyPass =
   def('anyPass',
       {},
-      [$.Array($.Function), a, $.Boolean],
+      [$.Array(Fn(a, $.Boolean)), a, $.Boolean],
       function(preds, x) {
         for (var idx = 0; idx < preds.length; idx += 1) {
           if (preds[idx](x)) return true;
@@ -2723,7 +2775,7 @@
   S.find =
   def('find',
       {},
-      [$.Function, $.Array(a), $Maybe(a)],
+      [Fn(a, $.Boolean), $.Array(a), $Maybe(a)],
       function(pred, xs) {
         for (var idx = 0, len = xs.length; idx < len; idx += 1) {
           if (pred(xs[idx])) {
@@ -2750,7 +2802,7 @@
   S.pluck =
   def('pluck',
       {a: [Accessible]},
-      [TypeRep, $.String, $.Array(a), $.Array($Maybe(b))],
+      [TypeRep(b), $.String, $.Array(a), $.Array($Maybe(b))],
       function(type, key, xs) { return R.map(get(type, key), xs); });
 
   //# reduce :: Foldable f => (a -> b -> a) -> a -> f b -> a
@@ -2774,8 +2826,8 @@
   //. ```
   var reduce = S.reduce =
   def('reduce',
-      {b: [Foldable]},
-      [$.Function, a, b, a],
+      {f: [Foldable]},
+      [Fn(a, Fn(b, a)), a, f(b), a],
       function(f_, initial, foldable) {
         var f = function(a, b) {
           return f_(a)(b);
@@ -2788,8 +2840,8 @@
   //. Version of [`reduce`](#reduce) accepting uncurried functions.
   var reduce_ = S.reduce_ =
   def('reduce_',
-      {b: [Foldable]},
-      [$.Function, a, b, a],
+      {f: [Foldable]},
+      [$.Function([a, b, a]), a, f(b), a],
       function(f, initial, foldable) {
         if (_type(foldable) === 'Array') {
           var acc = initial;
@@ -2821,7 +2873,7 @@
   S.unfoldr =
   def('unfoldr',
       {},
-      [$.Function, b, $.Array(a)],
+      [Fn(b, $Maybe($.Pair(a, b))), b, $.Array(a)],
       function(f, x) {
         var result = [];
         var m = f(x);
@@ -2899,7 +2951,7 @@
   var get = S.get =
   def('get',
       {a: [Accessible]},
-      [TypeRep, $.String, a, $Maybe(b)],
+      [TypeRep(b), $.String, a, $Maybe(b)],
       function(type, key, obj) { return filter(is(type), Just(obj[key])); });
 
   //# gets :: Accessible a => TypeRep b -> Array String -> a -> Maybe b
@@ -2924,7 +2976,7 @@
   S.gets =
   def('gets',
       {a: [Accessible]},
-      [TypeRep, $.Array($.String), a, $Maybe(b)],
+      [TypeRep(b), $.Array($.String), a, $Maybe(b)],
       function(type, keys, obj) {
         var x = obj;
         for (var idx = 0; idx < keys.length; idx += 1) {
@@ -3033,7 +3085,7 @@
   var sum = S.sum =
   def('sum',
       {f: [Foldable]},
-      [f, $.FiniteNumber],
+      [f($.FiniteNumber), $.FiniteNumber],
       reduce(function(a) { return function(b) { return a + b; }; }, 0));
 
   //# sub :: FiniteNumber -> FiniteNumber -> FiniteNumber
@@ -3112,7 +3164,7 @@
   S.product =
   def('product',
       {f: [Foldable]},
-      [f, $.FiniteNumber],
+      [f($.FiniteNumber), $.FiniteNumber],
       reduce(function(a) { return function(b) { return a * b; }; }, 1));
 
   //# div :: FiniteNumber -> NonZeroFiniteNumber -> FiniteNumber
@@ -3150,7 +3202,7 @@
   S.mean =
   def('mean',
       {f: [Foldable]},
-      [f, $Maybe($.FiniteNumber)],
+      [f($.FiniteNumber), $Maybe($.FiniteNumber)],
       function(foldable) {
         var result = reduce_(
           function(acc, n) {
@@ -3393,7 +3445,7 @@
   S.parseJson =
   def('parseJson',
       {},
-      [TypeRep, $.String, $Maybe(a)],
+      [TypeRep(a), $.String, $Maybe(a)],
       function(type, s) { return filter(is(type), encase(JSON.parse, s)); });
 
   //. ### RegExp

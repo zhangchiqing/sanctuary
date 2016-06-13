@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('init', function() {
@@ -12,20 +10,7 @@ describe('init', function() {
   it('is a unary function', function() {
     eq(typeof S.init, 'function');
     eq(S.init.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.init({length: -1}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'init :: List a -> Maybe (List a)\n' +
-                   '        ^^^^^^\n' +
-                   '          1\n' +
-                   '\n' +
-                   '1)  {"length": -1} :: Object, StrMap Number, StrMap FiniteNumber, StrMap NonZeroFiniteNumber, StrMap Integer, StrMap ValidNumber\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘List a’.\n'));
+    eq(S.init.toString(), 'init :: List a -> Maybe (List a)');
   });
 
   it('returns Nothing if applied to empty list', function() {

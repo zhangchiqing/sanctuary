@@ -1,10 +1,8 @@
 'use strict';
 
-var throws = require('assert').throws;
-
-var eq = require('./utils').eq;
-var errorEq = require('./utils').errorEq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('toUpper', function() {
@@ -12,20 +10,7 @@ describe('toUpper', function() {
   it('is a unary function', function() {
     eq(typeof S.toUpper, 'function');
     eq(S.toUpper.length, 1);
-  });
-
-  it('type checks its arguments', function() {
-    throws(function() { S.toUpper(true); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'toUpper :: String -> String\n' +
-                   '           ^^^^^^\n' +
-                   '             1\n' +
-                   '\n' +
-                   '1)  true :: Boolean\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+    eq(S.toUpper.toString(), 'toUpper :: String -> String');
   });
 
   it('returns the upper-case equivalent of its argument', function() {

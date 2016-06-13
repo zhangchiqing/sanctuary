@@ -1,7 +1,8 @@
 'use strict';
 
-var eq = require('./utils').eq;
 var S = require('..');
+
+var eq = require('./internal/eq');
 
 
 describe('pipe', function() {
@@ -9,6 +10,7 @@ describe('pipe', function() {
   it('is a binary function', function() {
     eq(typeof S.pipe, 'function');
     eq(S.pipe.length, 2);
+    eq(S.pipe.toString(), 'pipe :: Array Function -> a -> b');
   });
 
   it('composes a list of functions assumed to be unary', function() {
@@ -17,11 +19,6 @@ describe('pipe', function() {
     eq(S.pipe([parseInt, S.inc], '99'), 100);
     eq(S.pipe([parseInt, S.inc, Math.sqrt], '99'), 10);
     eq(S.pipe([parseInt, S.inc, Math.sqrt, S.dec], '99'), 9);
-  });
-
-  it('is curried', function() {
-    eq(S.pipe([parseInt, S.inc, Math.sqrt, S.dec]).length, 1);
-    eq(S.pipe([parseInt, S.inc, Math.sqrt, S.dec])('99'), 9);
   });
 
 });
