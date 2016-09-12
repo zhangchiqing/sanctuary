@@ -14,6 +14,7 @@ describe('parseFloat', function() {
   });
 
   it('returns a Maybe', function() {
+    eq(S.parseFloat(''), S.Nothing);
     eq(S.parseFloat('12.34'), S.Just(12.34));
     eq(S.parseFloat('Infinity'), S.Just(Infinity));
     eq(S.parseFloat('-Infinity'), S.Just(-Infinity));

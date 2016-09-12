@@ -27,6 +27,20 @@ describe('and', function() {
     eq(S.and([42], [43]), [43]);
   });
 
+  it('can be applied to objects', function() {
+    eq(S.and({}, {}), {});
+    eq(S.and({}, {x: 42}), {});
+    eq(S.and({x: 42}, {}), {});
+    eq(S.and({x: 42}, {x: 43}), {x: 43});
+  });
+
+  it('can be applied to strings', function() {
+    eq(S.and('', ''), '');
+    eq(S.and('', 'foo'), '');
+    eq(S.and('foo', ''), '');
+    eq(S.and('foo', 'bar'), 'bar');
+  });
+
   it('can be applied to maybes', function() {
     eq(S.and(S.Nothing, S.Nothing), S.Nothing);
     eq(S.and(S.Nothing, S.Just(42)), S.Nothing);

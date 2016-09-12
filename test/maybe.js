@@ -1,7 +1,5 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
@@ -16,11 +14,11 @@ describe('maybe', function() {
   });
 
   it('can be applied to Nothing', function() {
-    eq(S.maybe(0, R.length, S.Nothing), 0);
+    eq(S.maybe(0, S.prop('length'), S.Nothing), 0);
   });
 
   it('can be applied to a Just', function() {
-    eq(S.maybe(0, R.length, S.Just([1, 2, 3])), 3);
+    eq(S.maybe(0, S.prop('length'), S.Just([1, 2, 3])), 3);
   });
 
 });

@@ -1,7 +1,5 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
@@ -16,13 +14,13 @@ describe('find', function() {
   });
 
   it('returns Just the first element satisfying the predicate', function() {
-    eq(S.find(R.T, [null]), S.Just(null));
+    eq(S.find(S.K(true), [null]), S.Just(null));
     eq(S.find(function(n) { return n >= 0; }, [-1, 0, 1]), S.Just(0));
   });
 
   it('returns Nothing if no element satisfies the predicate', function() {
-    eq(S.find(R.T, []), S.Nothing);
-    eq(S.find(R.F, [1, 2, 3]), S.Nothing);
+    eq(S.find(S.K(true), []), S.Nothing);
+    eq(S.find(S.K(false), [1, 2, 3]), S.Nothing);
   });
 
 });

@@ -10,7 +10,7 @@ describe('xor', function() {
   it('is a binary function', function() {
     eq(typeof S.xor, 'function');
     eq(S.xor.length, 2);
-    eq(S.xor.toString(), 'xor :: (Alternative a, Monoid a) => a -> a -> a');
+    eq(S.xor.toString(), 'xor :: (Alternative a, MonoidB a) => a -> a -> a');
   });
 
   it('can be applied to Booleans', function() {
@@ -25,6 +25,20 @@ describe('xor', function() {
     eq(S.xor([], [42]), [42]);
     eq(S.xor([42], []), [42]);
     eq(S.xor([42], [43]), []);
+  });
+
+  it('can be applied to objects', function() {
+    eq(S.xor({}, {}), {});
+    eq(S.xor({}, {x: 42}), {x: 42});
+    eq(S.xor({x: 42}, {}), {x: 42});
+    eq(S.xor({x: 42}, {x: 43}), {});
+  });
+
+  it('can be applied to strings', function() {
+    eq(S.xor('', ''), '');
+    eq(S.xor('', 'foo'), 'foo');
+    eq(S.xor('foo', ''), 'foo');
+    eq(S.xor('foo', 'bar'), '');
   });
 
   it('can be applied to maybes', function() {

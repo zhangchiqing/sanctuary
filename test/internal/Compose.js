@@ -1,34 +1,46 @@
 'use strict';
 
-var R = require('ramda');
+var FL = require('fantasy-land');
+var Z = require('sanctuary-type-classes');
 
 
-//  Compose :: (Apply f, Apply g) => { of :: b -> f b } -> { of :: c -> g c } -> f (g a) -> Compose f g a
+var _Compose = function Compose(F, G, x) {
+  if (!(this instanceof Compose)) return new Compose(F, G, x);
+  this.F = F;
+  this.G = G;
+  this.x = x;
+};
+
+_Compose.prototype['@@type'] = 'sanctuary/Compose';
+
+_Compose.prototype[FL.equals] = function(other) {
+  return Z.equals(other.x, this.x);
+};
+
+_Compose.prototype[FL.map] = function(f) {
+  return _Compose(this.F, this.G, Z.map(function(y) { return Z.map(f, y); }, this.x));
+};
+
+_Compose.prototype[FL.ap] = function(other) {
+  return _Compose(this.F, this.G, Z.ap(Z.map(Z.ap, this.x), other.x));
+};
+
+_Compose.prototype.inspect =
+_Compose.prototype.toString = function() {
+  return 'Compose(' + Z.toString(this.F) + ')(' + Z.toString(this.G) + ')(' + Z.toString(this.x) + ')';
+};
+
+
+//  Compose :: (Apply f, Apply g) => TypeRep f -> TypeRep g -> f (g a) -> Compose f g a
 var Compose = function(F) {
   return function(G) {
-    var _Compose = function _Compose(x) {
-      return {
-        '@@type': 'sanctuary/Compose',
-        constructor: _Compose,
-        map: function(f) {
-          return _Compose(R.map(R.map(f), x));
-        },
-        ap: function(y) {
-          return _Compose(R.ap(R.map(R.ap, x), y.value));
-        },
-        equals: function(other) {
-          return R.equals(x, other.value);
-        },
-        toString: function() {
-          return 'Compose(' + R.toString(F) + ')' +
-                        '(' + R.toString(G) + ')' +
-                        '(' + R.toString(x) + ')';
-        },
-        value: x
-      };
+    var Composed = function(x) {
+      return _Compose(F, G, x);
     };
-    _Compose.of = function(x) { return _Compose(F.of(G.of(x))); };
-    return _Compose;
+    Composed[FL.of] = function(x) {
+      return _Compose(F, G, Z.of(F, Z.of(G, x)));
+    };
+    return Composed;
   };
 };
 

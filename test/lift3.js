@@ -1,7 +1,5 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var area = require('./internal/area');
@@ -26,7 +24,7 @@ describe('lift3', function() {
     eq(S.lift3(S.reduce, [S.add], [0], [[1, 2, 3]]), [6]);
     eq(S.lift3(S.reduce, [S.add], [0], []), []);
 
-    eq(S.lift3(R.curry(area), S.dec, S.I, S.inc)(4), 6);
+    eq(S.lift3(area, S.dec, S.I, S.inc)(4), 6);
   });
 
 });

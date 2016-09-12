@@ -14,8 +14,8 @@ var Compose = $.UnaryType(
 
 //  Identity :: Type -> Type
 var Identity = $.UnaryType(
-  'sanctuary/Identity',
-  function(x) { return S.type(x) === 'sanctuary/Identity'; },
+  'sanctuary-type-classes/Identity',
+  function(x) { return S.type(x) === 'sanctuary-type-classes/Identity'; },
   function(identity) { return [identity.value]; }
 );
 

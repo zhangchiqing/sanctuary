@@ -1,7 +1,5 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
@@ -16,7 +14,7 @@ describe('flip', function() {
   });
 
   it("flips a function's argument order", function() {
-    eq(R.map(S.flip(Math.pow)(2), [1, 2, 3, 4, 5]), [1, 4, 9, 16, 25]);
+    eq(S.map(S.flip(Math.pow)(2), [1, 2, 3, 4, 5]), [1, 4, 9, 16, 25]);
     eq(S.flip(S.indexOf, ['a', 'b', 'c', 'd'], 'c'), S.Just(2));
   });
 

@@ -1,7 +1,5 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
@@ -16,7 +14,7 @@ describe('B', function() {
   });
 
   it('composes two functions assumed to be unary', function() {
-    eq(S.B(R.map(Math.sqrt), JSON.parse, '[1, 4, 9]'), [1, 2, 3]);
+    eq(S.B(S.map(Math.sqrt), JSON.parse, '[1, 4, 9]'), [1, 2, 3]);
   });
 
 });

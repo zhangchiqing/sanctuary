@@ -25,7 +25,7 @@ describe('reduce', function() {
   });
 
   it('works with manually curried functions when dispatching', function() {
-    eq(S.reduce(add, 10, {reduce: function(f, a) { return f(a, 1); }}), 11);
+    eq(S.reduce(add, 10, {'fantasy-land/reduce': function(f, a) { return f(a, 1); }}), 11);
   });
 
 });

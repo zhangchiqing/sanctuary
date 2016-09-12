@@ -17,14 +17,13 @@
     "either",
     "functional",
     "maybe",
-    "ramda",
     "safe",
     "safety",
     "types"
   ],
   "dependencies": {
-    "ramda": "0.22.x",
-    "sanctuary-def": "0.6.x"
+    "sanctuary-def": "TK",
+    "sanctuary-type-classes": "TK"
   },
   "ignore": [
     "/.git/",

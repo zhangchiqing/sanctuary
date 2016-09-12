@@ -14,8 +14,6 @@ describe('meld', function() {
   });
 
   it('composes a list of unary functions', function() {
-    eq(S.meld([]).length, 1);
-    eq(S.meld([])(99), 99);
     eq(S.meld([S.inc]).length, 1);
     eq(S.meld([S.inc])(99), 100);
     eq(S.meld([S.inc, Math.sqrt]).length, 1);

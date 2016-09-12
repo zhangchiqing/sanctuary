@@ -1,11 +1,8 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
-var square = require('./internal/square');
 
 
 describe('either', function() {
@@ -17,11 +14,11 @@ describe('either', function() {
   });
 
   it('can be applied to a Left', function() {
-    eq(S.either(R.length, square, S.Left('abc')), 3);
+    eq(S.either(S.prop('length'), Math.sqrt, S.Left('abc')), 3);
   });
 
   it('can be applied to a Right', function() {
-    eq(S.either(R.length, square, S.Right(42)), 1764);
+    eq(S.either(S.prop('length'), Math.sqrt, S.Right(9)), 3);
   });
 
 });

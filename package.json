@@ -11,12 +11,13 @@
     "test": "make lint test"
   },
   "dependencies": {
-    "ramda": "0.22.x",
-    "sanctuary-def": "sanctuary-js/sanctuary-def#master"
+    "sanctuary-def": "sanctuary-js/sanctuary-def#dc-sanctuary-type-classes",
+    "sanctuary-type-classes": "0.2.x"
   },
   "devDependencies": {
     "doctest": "0.10.x",
     "eslint": "2.9.x",
+    "fantasy-land": "1.0.1",
     "istanbul": "0.4.x",
     "jsverify": "0.7.x",
     "mocha": "3.x.x",

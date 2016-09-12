@@ -1,7 +1,5 @@
 'use strict';
 
-var R = require('ramda');
-
 var S = require('..');
 
 var eq = require('./internal/eq');
@@ -17,7 +15,7 @@ describe('C', function() {
 
   it('C(f, x, y) is equivalent to f(y)(x)', function() {
     eq(S.C(S.concat, 'foo', 'bar'), 'barfoo');
-    eq(R.map(S.C(S.concat, '!'), ['BAM', 'POW', 'KA-POW']), ['BAM!', 'POW!', 'KA-POW!']);
+    eq(S.map(S.C(S.concat, '!'), ['BAM', 'POW', 'KA-POW']), ['BAM!', 'POW!', 'KA-POW!']);
   });
 
 });

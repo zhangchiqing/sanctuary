@@ -129,6 +129,10 @@ describe('parseInt', function() {
     eq(S.parseInt(16, '-0XFF'), S.Just(-255));
   });
 
+  it('returns Nothing for empty string', function() {
+    eq(S.parseInt(10, ''), S.Nothing);
+  });
+
   it('returns Nothing if one or more characters are invalid', function() {
     eq(S.parseInt(10, '12.34'), S.Nothing);  // parseInt('12.34', 10) == 12
     eq(S.parseInt(16, 'alice'), S.Nothing);  // parseInt('alice', 16) == 10

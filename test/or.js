@@ -27,6 +27,20 @@ describe('or', function() {
     eq(S.or([42], [43]), [42]);
   });
 
+  it('can be applied to objects', function() {
+    eq(S.or({}, {}), {});
+    eq(S.or({}, {x: 42}), {x: 42});
+    eq(S.or({x: 42}, {}), {x: 42});
+    eq(S.or({x: 42}, {x: 43}), {x: 42});
+  });
+
+  it('can be applied to strings', function() {
+    eq(S.or('', ''), '');
+    eq(S.or('', 'foo'), 'foo');
+    eq(S.or('foo', ''), 'foo');
+    eq(S.or('foo', 'bar'), 'foo');
+  });
+
   it('can be applied to maybes', function() {
     eq(S.or(S.Nothing, S.Nothing), S.Nothing);
     eq(S.or(S.Nothing, S.Just(42)), S.Just(42));
