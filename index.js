@@ -2672,6 +2672,26 @@
       [a, $.Array(a), $.Array(a)],
       function(x, xs) { return [x].concat(xs); });
 
+  //# joinWith :: String -> Array String -> String
+  //.
+  //. Joins the strings of the second argument separated by the first argument.
+  //.
+  //. Properties:
+  //.
+  //.   - `forall s :: String, t :: String. S.joinWith(s, S.splitOn(s, t)) = t`
+  //.
+  //. See also [`splitOn`](#splitOn).
+  //.
+  //. ```javascript
+  //. > S.joinWith(':', ['foo', 'bar', 'baz'])
+  //. 'foo:bar:baz'
+  //. ```
+  S.joinWith =
+  def('joinWith',
+      {},
+      [$.String, $.Array($.String), $.String],
+      function(separator, ss) { return ss.join(separator); });
+
   //# find :: (a -> Boolean) -> Array a -> Maybe a
   //.
   //. Takes a predicate and an array and returns Just the leftmost element of
@@ -3558,6 +3578,23 @@
       {},
       [$.Array($.String), $.String],
       compose(R.join(''), R.map(concat(_, '\n'))));
+
+  //# splitOn :: String -> String -> Array String
+  //.
+  //. Returns the substrings of its second argument separated by occurrences
+  //. of its first argument.
+  //.
+  //. See also [`joinWith`](#joinWith).
+  //.
+  //. ```javascript
+  //. > S.splitOn('::', 'foo::bar::baz')
+  //. ['foo', 'bar', 'baz']
+  //. ```
+  S.splitOn =
+  def('splitOn',
+      {},
+      [$.String, $.String, $.Array($.String)],
+      function(separator, s) { return s.split(separator); });
 
   return S;
 
